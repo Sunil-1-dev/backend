@@ -1,5 +1,6 @@
+import express from "express";
 import dotenv from "dotenv";
-
+import { app } from "./app.js";
 import connectDB from "./db/index.js";
 
 dotenv.config({
@@ -13,7 +14,7 @@ connectDB()
     });
   })
   .catch((error) => {
-    console.log("MONGO db connection failed !!! ");
+    console.log("MONGO db connection failed !!! ",error.message);
   });
 
 /* (async () => {
