@@ -5,15 +5,15 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResonse.js";
 import { use } from "react";
 
-const generateAccessAndRefereshToken= async(userId)=>{
+const generateAccessAndRefreshToken= async(userId)=>{
     try {
         const user=await user.findById(userId)
         const accessToken=user.generateAccessToken()
-        const refereshToken=user.generateRefreshToken()
-        user.refereshToken=refereshToken
+        const refreshToken=user.generateRefreshToken()
+        user.refreshToken=refreshToken
         await user.save({validateBeforeSave:false})
 
-        return {accessToken,refereshToken}
+        return {accessToken,refreshToken}
 
     } catch (error) {
         throw new ApiError(500,"Something went wrong while generating access and referesh token")
@@ -112,5 +112,29 @@ const loginUser= asyncHandler(async (req,res)=>{
         throw new ApiError(401,"Invalid user credientials")
     }
 
+    const {accessToken,refreshToken}=await generateAccessAndRefreshToken(user._id)
+
+    const loggedInUser=User.findById(user._id).select("-password -refreshToken")
+
+    const options={
+        httpOnly:true,
+        secure:true
+    }
+
+    return res.status(200)
+    .cookie("accessToken,accessToken,options")
+    .cookie("refreshToken,refreshToken,options")
+    .json(
+        new ApiResponse(
+            200,
+            {
+                user:loggedInUser,accessToken,
+                refreshToken
+            },
+            "user logged in sucessfully"
+        )
+    )
+
+
 })
-export {registerUser,}
+export {registerUser,loginUser}
